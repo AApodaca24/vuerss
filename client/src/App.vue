@@ -1,60 +1,228 @@
 <template>
-  <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+  <v-app id="inspire">
+    <v-navigation-drawer clipped fixed v-model="drawer" app>
+      <v-list dense>
+        <v-subheader>Menu</v-subheader>
+        <v-list-item-group color="primary">
+          <v-list-item @click="allFeeds">
+            <v-list-item-icon>
+              <v-icon> dashboard </v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title> All Feeds </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item @click="addFeed">
+            <v-list-item-icon>
+              <v-icon> add </v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title> Add </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item
+            @click="filterFeed(feed)"
+            v-for="(feed, index) in feeds"
+            :key="index"
+            :value="feed == selectedFeed"
+          >
+            <v-list-item-icon @click="filterFeed(feed)">
+              <v-icon :color="feed.color"> bookmark </v-icon>
+            </v-list-item-icon>
+            <v-list-item-content @click="filterFeed(feed)">
+              <v-list-item-title>{{ feed.title }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
+    </v-navigation-drawer>
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+    <v-app-bar app clipped-left>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>Application</v-toolbar-title>
     </v-app-bar>
 
     <v-main>
-      <HelloWorld/>
+      <v-container class="fill-height" fluid>
+        <v-row align="center" justify="center">
+          <v-col>
+            <div>
+              <v-container fluid grid-list-lg>
+                <v-layout row wrap>
+                  <v-flex xs12 v-for="(item, index) in selectedFeed.items" :key="index">
+                    <v-card>
+                      <v-card-title primary-title>
+                        <div class="headline">{{ item.title }}</div>
+                      </v-card-title>
+                      <v-card-text v-html="item.content"> </v-card-text>
+                      <v-card-actions>
+                        <v-btn text target="_new" :href="item.link"
+                          >Read on {{ item.feedTitle }}</v-btn
+                        >
+                      </v-card-actions>
+                    </v-card>
+                  </v-flex>
+                </v-layout>
+              </v-container>
+            </div>
+          </v-col>
+        </v-row>
+        <v-dialog v-model="addFeedDialog" max-width="500px">
+          <v-card>
+            <v-card-title>Add Feed</v-card-title>
+            <v-card-text>
+              Add the RSS URL for a feed below, or the URL for the site and I'll
+              try to auto-discover the RSS feed.
+              <v-text-field
+                v-model="addURL"
+                label="URL"
+                :error="urlError"
+                :rules="urlRules"
+              ></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn color="primary" @click.stop="addFeedAction">Add</v-btn>
+              <v-btn color="primary" text @click.stop="addFeedDialog = false"
+                >Close</v-btn
+              >
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-container>
     </v-main>
+
+    <v-footer app>
+      <span>&copy; {{ new Date().getFullYear() }}</span>
+    </v-footer>
   </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue';
+import axios from 'axios';
+
+const colors = [
+  'indigo',
+  'blue',
+  'cyan',
+  'light-blue',
+  'teal',
+  'light-green',
+  'blue-grey',
+];
 
 export default {
   name: 'App',
-
-  components: {
-    HelloWorld,
-  },
-
   data: () => ({
     //
+    drawer: true,
+    showIntro: false,
+    addFeedDialog: false,
+    addURL: 'http://feeds.feedburner.com/raymondcamdensblog',
+    urlError: false,
+    urlRules: [],
+    feeds: [],
+    allItems: [],
+    selectedFeed: null,
+    error: false,
+    errorMsg: '',
   }),
+  computed: {
+    items() {
+      if (this.allItems.length === 0) return [];
+      // filter
+      let items = [];
+      if (this.selectedFeed) {
+        console.log('filtered');
+        items = this.allItems.filter(item => item.feedPk == this.selectedFeed);
+      } else {
+        items = this.allItems;
+      }
+      items = items.sort((a, b) => new Date(b.isoDate) - new Date(a.isoDate));
+
+      return items;
+    },
+  },
+  created() {
+    this.$vuetify.theme.dark = true;
+    this.restoreFeeds();
+  },
+  methods: {
+    allFeeds() {
+      this.selectedFeed = null;
+    },
+    storeFeeds() {
+      console.log('calling storeFeeds');
+      localStorage.setItem('feeds', JSON.stringify(this.feeds));
+    },
+    addFeed() {
+      console.log('Add Feed');
+      this.addFeedDialog = true;
+    },
+    async addFeedAction() {
+      try {
+        this.urlError = false;
+        this.urlRules = [];
+        // first, see if new
+        if (this.feeds.findIndex(feed => feed.rsslink === this.addURL) >= 0) {
+          this.urlError = true;
+          this.urlRules = ['URL already exists.'];
+        } else {
+          const { data } = await axios.post('http://localhost:3000/rss', {
+            url: this.addURL,
+          });
+          const feed = data.items;
+          data.color = colors[this.feeds.length % (colors.length - 1)];
+          feed.forEach(f => {
+            f.feedPk = this.addURL;
+            f.feedColor = data.color;
+            this.allItems.push(f);
+          });
+          data.feedUrl = this.addURL;
+          this.feeds.push(data);
+          this.addFeedDialog = false;
+          this.storeFeeds();
+        }
+      } catch (error) {
+        console.log(error);
+        this.error = true;
+        this.errorMsg = error.message;
+      }
+    },
+
+    filterFeed(feed) {
+      this.selectedFeed = feed;
+    },
+    loadFeed(feed) {
+      axios
+        .post('http://localhost:3000/rss', { url: feed })
+        .then(res => {
+          res.data.items.forEach(item => {
+            item.feedPk = feed.rsslink;
+            item.feedTitle = feed.title;
+            item.feedColor = feed.color;
+            this.allItems.push(item);
+          });
+
+          this.addFeedDialog = false;
+
+          // persist the feed, but not the items
+          this.storeFeeds();
+        })
+        .catch(error => {
+          this.error = true;
+          this.errorMsg = error.message;
+        });
+    },
+    restoreFeeds() {
+      const feeds = localStorage.getItem('feeds');
+      if (feeds) {
+        this.feeds = JSON.parse(feeds);
+        this.feeds.forEach((feed, idx) => {
+          feed.color = colors[idx % (colors.length - 1)];
+          this.loadFeed(feed);
+        });
+      }
+    },
+  },
 };
 </script>
