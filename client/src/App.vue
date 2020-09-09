@@ -49,7 +49,7 @@
             <div>
               <v-container fluid grid-list-lg>
                 <v-layout row wrap>
-                  <v-flex xs12 v-for="(item, index) in selectedFeed.items" :key="index">
+                  <v-flex xs12 v-for="(item, index) in items" :key="index">
                     <v-card>
                       <v-card-title primary-title>
                         <div class="headline">{{ item.title }}</div>
@@ -57,7 +57,7 @@
                       <v-card-text v-html="item.content"> </v-card-text>
                       <v-card-actions>
                         <v-btn text target="_new" :href="item.link"
-                          >Read on {{ item.feedTitle }}</v-btn
+                          >See link</v-btn
                         >
                       </v-card-actions>
                     </v-card>
@@ -133,7 +133,7 @@ export default {
       let items = [];
       if (this.selectedFeed) {
         console.log('filtered');
-        items = this.allItems.filter(item => item.feedPk == this.selectedFeed);
+        items = this.allItems.filter(item => item.feedPk == this.selectedFeed.feedUrl);
       } else {
         items = this.allItems;
       }
@@ -173,10 +173,12 @@ export default {
           const feed = data.items;
           data.color = colors[this.feeds.length % (colors.length - 1)];
           feed.forEach(f => {
+            console.log(this.addURL);
             f.feedPk = this.addURL;
             f.feedColor = data.color;
             this.allItems.push(f);
           });
+          delete data.items;
           data.feedUrl = this.addURL;
           this.feeds.push(data);
           this.addFeedDialog = false;

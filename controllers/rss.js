@@ -4,7 +4,12 @@ let parser = new Parser();
 const parseRss = async (req, res) => {
     console.log(req.body)
     let url
-    if (req.body && req.body.url) url = req.body.url
+    if (req.body && req.body.url.feedUrl) {
+        url = req.body.url.feedUrl
+    } else {
+        url = req.body.url
+    }
+    
     console.log(`commencing parse of ${url}`)
     try {
         let feed = await parser.parseURL(url);
