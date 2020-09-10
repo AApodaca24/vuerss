@@ -132,7 +132,7 @@ export default {
     drawer: true,
     showIntro: false,
     addFeedDialog: false,
-    addURL: 'http://feeds.feedburner.com/raymondcamdensblog',
+    addURL: '',
     urlError: false,
     urlRules: [],
     feeds: [],
