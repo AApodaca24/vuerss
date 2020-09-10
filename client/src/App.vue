@@ -21,7 +21,6 @@
             </v-list-item-content>
           </v-list-item>
           <v-list-item
-            @click="filterFeed(feed)"
             v-for="(feed, index) in feeds"
             :key="index"
             :value="feed == selectedFeed"
@@ -39,7 +38,10 @@
 
     <v-app-bar app clipped-left>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>Application</v-toolbar-title>
+      <v-toolbar-title
+        >myRSS
+        <v-icon color="orange darken-3" class="pb-1">rss_feed</v-icon>
+      </v-toolbar-title>
     </v-app-bar>
 
     <v-main>
@@ -54,12 +56,25 @@
                       <v-card-title primary-title>
                         <div class="headline">{{ item.title }}</div>
                       </v-card-title>
-                      <v-card-text v-html="item.content"> </v-card-text>
+                      <v-card-text v-html="item.contentSnippet"> </v-card-text>
                       <v-card-actions>
                         <v-btn text target="_new" :href="item.link"
                           >See link</v-btn
                         >
+                        <v-spacer></v-spacer>
+                        <v-btn icon @click="show = !show">
+                          <v-icon>{{
+                            show ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                          }}</v-icon>
+                        </v-btn>
                       </v-card-actions>
+                      <v-expand-transition>
+                        <div v-show="show">
+                          <v-divider></v-divider>
+
+                          <v-card-text v-html="item.content"> </v-card-text>
+                        </div>
+                      </v-expand-transition>
                     </v-card>
                   </v-flex>
                 </v-layout>
@@ -125,6 +140,7 @@ export default {
     selectedFeed: null,
     error: false,
     errorMsg: '',
+    show: false,
   }),
   computed: {
     items() {
@@ -133,7 +149,9 @@ export default {
       let items = [];
       if (this.selectedFeed) {
         console.log('filtered');
-        items = this.allItems.filter(item => item.feedPk == this.selectedFeed.feedUrl);
+        items = this.allItems.filter(
+          item => item.feedPk == this.selectedFeed.feedUrl,
+        );
       } else {
         items = this.allItems;
       }
@@ -199,7 +217,7 @@ export default {
         .post('http://localhost:3000/rss', { url: feed })
         .then(res => {
           res.data.items.forEach(item => {
-            item.feedPk = feed.rsslink;
+            item.feedPk = feed.feedUrl;
             item.feedTitle = feed.title;
             item.feedColor = feed.color;
             this.allItems.push(item);
