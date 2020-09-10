@@ -40,7 +40,7 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title
         >myRSS
-        <v-icon color="orange darken-3" class="pb-1">rss_feed</v-icon>
+        <v-icon color="orange darken-3" class="pb-1"> rss_feed </v-icon>
       </v-toolbar-title>
     </v-app-bar>
 
