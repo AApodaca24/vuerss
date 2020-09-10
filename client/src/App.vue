@@ -38,10 +38,8 @@
 
     <v-app-bar app clipped-left>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title
-        >myRSS
-        <v-icon color="orange darken-3" class="pb-1"> rss_feed </v-icon>
-      </v-toolbar-title>
+      <v-toolbar-title>myRSS </v-toolbar-title>
+      <v-icon color="orange darken-3" class="ml-2"> rss_feed </v-icon>
     </v-app-bar>
 
     <v-main>
