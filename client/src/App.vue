@@ -183,7 +183,7 @@ export default {
           this.urlError = true;
           this.urlRules = ['URL already exists.'];
         } else {
-          const { data } = await axios.post('http://localhost:3000/rss', {
+          const { data } = await axios.post('https://dfrss.azurewebsites.net/rss', {
             url: this.addURL,
           });
           const feed = data.items;
@@ -212,7 +212,7 @@ export default {
     },
     loadFeed(feed) {
       axios
-        .post('http://localhost:3000/rss', { url: feed })
+        .post('https://dfrss.azurewebsites.net/rss', { url: feed })
         .then(res => {
           res.data.items.forEach(item => {
             item.feedPk = feed.feedUrl;
