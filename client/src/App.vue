@@ -127,7 +127,7 @@ export default {
   name: 'App',
   data: () => ({
     //
-    drawer: true,
+    drawer: false,
     showIntro: false,
     addFeedDialog: false,
     addURL: '',
