@@ -168,16 +168,29 @@ export default {
     },
     async storeFeeds() {
       console.log('calling storeFeeds');
-      try {
-        await axios.post(
-          'https://dfrss.azurewebsites.net/rss/store',
-          this.feeds,
-        );
-      } catch (err) {
-        this.error = true;
-        this.errorMsg = err.message;
-        alert(err.message);
+      if (this.feeds.length > 0) {
+        this.feeds.forEach(async feed => {
+          try {
+            await axios.post('https://dfrss.azurewebsites.net/rss/store', feed);
+          } catch (err) {
+            this.error = true;
+            this.errorMsg = err.message;
+            alert(err.message);
+          }
+        });
+      } else {
+        try {
+          await axios.post(
+            'https://dfrss.azurewebsites.net/rss/store',
+            this.feeds,
+          );
+        } catch (err) {
+          this.error = true;
+          this.errorMsg = err.message;
+          alert(err.message);
+        }
       }
+
       localStorage.setItem('feeds', JSON.stringify(this.feeds));
     },
     addFeed() {
