@@ -4,11 +4,14 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
-const { parseRss } = require('./controllers/rss')
+const { connectDB } = require('./config/db')
+const { parseRss, storeRss, getRss } = require('./controllers/rss')
 
 dotenv.config();
 
-// INit App variable
+connectDB();
+
+// INit Apvariable
 const app = express();
 
 //COnfigure middlewares
@@ -17,8 +20,16 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.get('/rss', (req, res) => {
+  getRss(req, res)
+})
+
 app.post('/rss', (req, res) => {
     parseRss(req, res)
+})
+
+app.post('/rss/store', (req, res) => {
+  storeRss(req,res)
 })
 
 //Serve vue app

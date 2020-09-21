@@ -166,8 +166,15 @@ export default {
     allFeeds() {
       this.selectedFeed = null;
     },
-    storeFeeds() {
+    async storeFeeds() {
       console.log('calling storeFeeds');
+      try {
+        await axios.post('https://dfrss.azurewebsites.net/rss/store', this.feeds);
+      } catch (err) {
+        this.error = true;
+        this.errorMsg = err.message;
+        alert(err.message);
+      }
       localStorage.setItem('feeds', JSON.stringify(this.feeds));
     },
     addFeed() {
@@ -183,9 +190,12 @@ export default {
           this.urlError = true;
           this.urlRules = ['URL already exists.'];
         } else {
-          const { data } = await axios.post('https://dfrss.azurewebsites.net/rss', {
-            url: this.addURL,
-          });
+          const { data } = await axios.post(
+            'https://dfrss.azurewebsites.net/rss',
+            {
+              url: this.addURL,
+            },
+          );
           const feed = data.items;
           data.color = colors[this.feeds.length % (colors.length - 1)];
           feed.forEach(f => {
@@ -231,14 +241,18 @@ export default {
           this.errorMsg = error.message;
         });
     },
-    restoreFeeds() {
-      const feeds = localStorage.getItem('feeds');
-      if (feeds) {
-        this.feeds = JSON.parse(feeds);
-        this.feeds.forEach((feed, idx) => {
-          feed.color = colors[idx % (colors.length - 1)];
-          this.loadFeed(feed);
-        });
+    async restoreFeeds() {
+      try {
+        const feeds = await axios.get('https://dfrss.azurewebsites.net/rss');
+        if (feeds) {
+          this.feeds = JSON.parse(feeds);
+          this.feeds.forEach((feed, idx) => {
+            feed.color = colors[idx % (colors.length - 1)];
+            this.loadFeed(feed);
+          });
+        }
+      } catch (error) {
+        console.log(error);
       }
     },
   },
