@@ -38,7 +38,7 @@ const getRss = (req, res) => {
 };
 
 const storeRss = (req, res) => {
-  console.log(req.body);
+  console.dir(req.body);
   const {
     color,
     description,
@@ -48,19 +48,20 @@ const storeRss = (req, res) => {
     link,
     title,
   } = req.body;
+
   const rss = new RSS({
-    color,
-    description,
-    feedUrl,
-    language,
-    lastBuildDate,
-    link,
-    title,
+    color: color,
+    description: description,
+    feedUrl: feedUrl,
+    language: language ,
+    lastBuildDate: lastBuildDate,
+    link: link,
+    title: title,
   });
-  console.log(rss);
+  console.dir(rss);
   rss
     .save()
-    .then(() => res.status(200).json({ message: 'User added', rss }))
+    .then((rss) => res.status(200).json({ message: 'User added', rss }))
     .catch(err =>
       res
         .status(500)

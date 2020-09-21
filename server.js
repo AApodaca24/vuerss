@@ -20,12 +20,13 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/rss', (req, res) => {
-  getRss(req, res)
-})
 
 app.post('/rss', (req, res) => {
     parseRss(req, res)
+})
+
+app.get('/rss', (req, res) => {
+  getRss(req, res)
 })
 
 app.post('/rss/store', (req, res) => {

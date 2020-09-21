@@ -169,7 +169,10 @@ export default {
     async storeFeeds() {
       console.log('calling storeFeeds');
       try {
-        await axios.post('https://dfrss.azurewebsites.net/rss/store', this.feeds);
+        await axios.post(
+          'https://dfrss.azurewebsites.net/rss/store',
+          this.feeds,
+        );
       } catch (err) {
         this.error = true;
         this.errorMsg = err.message;
@@ -243,9 +246,10 @@ export default {
     },
     async restoreFeeds() {
       try {
-        const feeds = await axios.get('https://dfrss.azurewebsites.net/rss');
-        if (feeds) {
-          this.feeds = JSON.parse(feeds);
+        const { data } = await axios.get('https://dfrss.azurewebsites.net/rss');
+        console.log(data);
+        if (data) {
+          this.feeds = data;
           this.feeds.forEach((feed, idx) => {
             feed.color = colors[idx % (colors.length - 1)];
             this.loadFeed(feed);
