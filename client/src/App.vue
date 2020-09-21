@@ -168,30 +168,15 @@ export default {
     },
     async storeFeeds() {
       console.log('calling storeFeeds');
-      if (this.feeds.length > 0) {
-        this.feeds.forEach(async feed => {
-          try {
-            await axios.post('https://dfrss.azurewebsites.net/rss/store', feed);
-          } catch (err) {
-            this.error = true;
-            this.errorMsg = err.message;
-            alert(err.message);
-          }
-        });
-      } else {
+      this.feeds.forEach(async feed => {
         try {
-          await axios.post(
-            'https://dfrss.azurewebsites.net/rss/store',
-            this.feeds,
-          );
+          await axios.post('https://dfrss.azurewebsites.net/rss/store', feed);
         } catch (err) {
           this.error = true;
           this.errorMsg = err.message;
           alert(err.message);
         }
-      }
-
-      localStorage.setItem('feeds', JSON.stringify(this.feeds));
+      });
     },
     addFeed() {
       console.log('Add Feed');
@@ -248,9 +233,6 @@ export default {
           });
 
           this.addFeedDialog = false;
-
-          // persist the feed, but not the items
-          this.storeFeeds();
         })
         .catch(error => {
           this.error = true;
