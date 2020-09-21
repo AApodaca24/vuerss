@@ -70,7 +70,8 @@
                         <div v-show="show">
                           <v-divider></v-divider>
 
-                          <v-card-text v-html="item.content"> </v-card-text>
+                          <v-card-text v-text="item.content"> </v-card-text>
+
                         </div>
                       </v-expand-transition>
                     </v-card>
